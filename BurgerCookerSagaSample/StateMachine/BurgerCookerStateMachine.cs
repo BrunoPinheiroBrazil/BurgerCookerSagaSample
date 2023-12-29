@@ -19,6 +19,7 @@ namespace BurgerCookerSagaSample.StateMachine
 				When(BurgerCookerOrderedEvent)
 					.Then(context =>
 					{
+						Console.WriteLine($"Cooker Ordering Event Started for: CorrelationID: {context.Message.CorrelationId} - Cooking temp: {context.Message.CookTemp} - Client Name: {context.Message.CustomerName}");
 						context.Saga.CustomerName = context.Message.CustomerName;
 						context.Saga.CookTemp = context.Message.CookTemp;
 
@@ -38,10 +39,12 @@ namespace BurgerCookerSagaSample.StateMachine
 				When(BurgerCookerBeginCookingEvent)
 					.Then(context =>
 					{
-						var cookBurger = new CookBurger
+            Console.WriteLine($"Burger Cooker Begin Cooking event Started for: CorrelationID: {context.Message.CorrelationId} - Cooking temp: {context.Message.CookTemp} - Client Name: {context.Message.CustomerName}");
+            var cookBurger = new CookBurger
 						{
 							CookTemp = context.Message.CookTemp,
-							CorrelationId = context.Message.CorrelationId
+							CorrelationId = context.Message.CorrelationId,
+							CustomerName = context.Message.CustomerName
 						};
 						context.Publish(cookBurger);
 					})
@@ -52,7 +55,7 @@ namespace BurgerCookerSagaSample.StateMachine
 				When(BurgerCookerFinishedCookingEvent)
 					.Then(context =>
 					{
-						Console.WriteLine($"Order Up for: {context.Saga.CustomerName} Cook Temp: {context.Saga.CookTemp} ");
+						Console.WriteLine($"Order Up for: CorrelationID: {context.Saga.CorrelationId} - Client Name: {context.Saga.CustomerName} - Cook Temp: {context.Saga.CookTemp} ");
 					})
 			.TransitionTo(Ordered)
 			);
