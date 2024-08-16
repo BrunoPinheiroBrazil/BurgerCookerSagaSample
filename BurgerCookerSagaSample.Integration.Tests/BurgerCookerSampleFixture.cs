@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using BurgerCookerSagaSample.Consumers;
+using MassTransit;
 using MassTransit.Testing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -14,8 +15,8 @@ namespace BurgerCookerSagaSample.Integration.Tests
       builder.ConfigureServices(services =>
       {
         services.AddMassTransitTestHarness();
-        builder.UseEnvironment("Development");
       });
+      builder.UseEnvironment("Development");
     }
   }
   public class BurgerCookerSampleFixture

@@ -26,7 +26,7 @@ namespace BurgerCookerSagaSample.Integration.Tests
       {
         CorrelationId = sagaID,
         CustomerName = "JOSIAS",
-        CookTemp = "50C"
+        CookTemp = "BURNED"
       };
 
       var payloadJson = JsonConvert.SerializeObject(payload);
