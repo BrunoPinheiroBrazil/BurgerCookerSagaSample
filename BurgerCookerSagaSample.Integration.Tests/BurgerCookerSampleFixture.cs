@@ -1,4 +1,5 @@
 ﻿using BurgerCookerSagaSample.Consumers;
+using BurgerCookerSagaSample.StateMachine;
 using MassTransit;
 using MassTransit.Testing;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +15,16 @@ namespace BurgerCookerSagaSample.Integration.Tests
     {
       builder.ConfigureServices(services =>
       {
-        services.AddMassTransitTestHarness();
+        services.AddMassTransitTestHarness(busCfg =>
+        {
+          busCfg.AddSagaStateMachine<BurgerCookerStateMachine, BurgerCookerState>();
+          busCfg.UsingInMemory((context, cfg) =>
+          {
+            cfg.UseDelayedMessageScheduler();
+            cfg.ConfigureEndpoints(context);
+          });
+        });
+        
       });
       builder.UseEnvironment("Development");
     }
