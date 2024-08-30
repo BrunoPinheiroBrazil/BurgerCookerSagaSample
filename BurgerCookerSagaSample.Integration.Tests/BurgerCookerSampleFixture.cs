@@ -15,15 +15,7 @@ namespace BurgerCookerSagaSample.Integration.Tests
     {
       builder.ConfigureServices(services =>
       {
-        services.AddMassTransitTestHarness(busCfg =>
-        {
-          busCfg.AddSagaStateMachine<BurgerCookerStateMachine, BurgerCookerState>();
-          busCfg.UsingInMemory((context, cfg) =>
-          {
-            cfg.UseDelayedMessageScheduler();
-            cfg.ConfigureEndpoints(context);
-          });
-        });
+        services.AddMassTransitTestHarness();
         
       });
       builder.UseEnvironment("Development");

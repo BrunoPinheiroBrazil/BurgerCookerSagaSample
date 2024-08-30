@@ -10,10 +10,10 @@ namespace BurgerCookerSagaSample.Services
   }
   public class CookBurgerService : ICookBurgerService
   {
-    private readonly IBus _bus;
-    public CookBurgerService(IBus bus)
+    private readonly IRequestClient<BurgerCookerOrderedEvent> _client;
+    public CookBurgerService(IRequestClient<BurgerCookerOrderedEvent> client)
     {
-      _bus = bus;
+      _client = client;
     }
 
     public async Task SendCookBurgerMessage(CookBurger cookBurger)
@@ -25,8 +25,8 @@ namespace BurgerCookerSagaSample.Services
         CustomerName = cookBurger.CustomerName
       };
 
-      await _bus.Publish(burgerBeginCookingEvent);
       Console.WriteLine("CookBurger Message Sent");
+      await _client.GetResponse<BurgerCookerCompletedEvent>(burgerBeginCookingEvent);
     }
   }
 }

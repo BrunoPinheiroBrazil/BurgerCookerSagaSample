@@ -1,6 +1,10 @@
+using BurgerCookerSagaSample.Consumers;
+using BurgerCookerSagaSample.Events;
 using BurgerCookerSagaSample.Services;
+using BurgerCookerSagaSample.StateMachine;
 using MassTransit;
 using System.Reflection;
+using static MassTransit.Logging.OperationName;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,15 +25,30 @@ builder.Services.AddMassTransit(mt =>
 
 	var entryAssembly = Assembly.GetEntryAssembly();
 
-	mt.AddConsumers(entryAssembly);
-	mt.AddSagaStateMachines(entryAssembly);
-	mt.AddSagas(entryAssembly);
+  mt.AddConsumer<CookBurgerConsumer>();
+  mt.AddSagaStateMachine<BurgerCookerStateMachine, BurgerCookerState>()
+        .InMemoryRepository();
+
+  //mt.AddSagas(entryAssembly);
 	mt.AddActivities(entryAssembly);
 
-	mt.UsingInMemory((context, cfg) =>
-	{
+  mt.UsingRabbitMq((context, cfg) =>
+  {
 		cfg.ConfigureEndpoints(context);
-	});
+    cfg.Host(new Uri("rabbitmq://localhost//TESTS"), h =>
+    {
+      h.Username("guest");
+      h.Password("guest");
+
+      //No SSL for local connection
+      //h.UseSsl(c =>
+      //{
+      //  c.Protocol = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls13;
+      //});
+    });
+  });
+
+  mt.AddRequestClient<BurgerCookerOrderedEvent>(RequestTimeout.After(s:30));
 });
 
 var app = builder.Build();
