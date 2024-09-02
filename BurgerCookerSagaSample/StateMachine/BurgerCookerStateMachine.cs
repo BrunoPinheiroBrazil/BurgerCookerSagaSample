@@ -23,6 +23,12 @@ namespace BurgerCookerSagaSample.StateMachine
             Console.WriteLine($"Cooker Ordering Event Started for: CorrelationID: {context.Message.CorrelationId} - Cooking temp: {context.Message.CookTemp} - Client Name: {context.Message.CustomerName}");
             context.Saga.CustomerName = context.Message.CustomerName;
             context.Saga.CookTemp = context.Message.CookTemp;
+            
+            if(context.TryGetPayload(out SagaConsumeContext<BurgerCookerState>? payload))
+            {
+              context.Saga.ResponseAddress = payload?.ResponseAddress;
+              context.Saga.RequestId = payload?.RequestId;
+            };
 
             var burgerCookerBeginCookingEvent = new BurgerCookerBeginCookingEvent
             {
@@ -54,7 +60,7 @@ namespace BurgerCookerSagaSample.StateMachine
 
       During(FinishedCooking,
         When(BurgerCookerFinishedCookingEvent)
-          .Then(context =>
+          .Then(async context =>
           {
             Console.WriteLine($"Order Up for: CorrelationID: {context.Saga.CorrelationId} - Client Name: {context.Saga.CustomerName} - Cook Temp: {context.Saga.CookTemp} ");
             var burgerCookerCompletedEvent = new BurgerCookerCompletedEvent
@@ -64,7 +70,9 @@ namespace BurgerCookerSagaSample.StateMachine
               CookTemp = context.Message.CookTemp
             };
 
-            context.Respond(burgerCookerCompletedEvent);
+            var responseAddress = await context.GetSendEndpoint(context.Saga.ResponseAddress);
+
+            await responseAddress.Send(burgerCookerCompletedEvent, c => c.RequestId = context.Saga.RequestId);
           })
       .TransitionTo(Completed)
       .Finalize());
