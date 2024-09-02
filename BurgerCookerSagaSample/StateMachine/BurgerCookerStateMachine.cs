@@ -64,7 +64,7 @@ namespace BurgerCookerSagaSample.StateMachine
               CookTemp = context.Message.CookTemp
             };
 
-            context.Publish(burgerCookerCompletedEvent);
+            context.Respond(burgerCookerCompletedEvent);
           })
       .TransitionTo(Completed)
       .Finalize());

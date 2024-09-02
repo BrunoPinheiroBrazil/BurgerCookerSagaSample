@@ -23,17 +23,15 @@ builder.Services.AddMassTransit(mt =>
 
 	mt.SetInMemorySagaRepositoryProvider();
 
-	var entryAssembly = Assembly.GetEntryAssembly();
+  mt.AddRequestClient<BurgerCookerOrderedEvent>(RequestTimeout.After(s: 30));
 
   mt.AddConsumer<CookBurgerConsumer>();
   mt.AddSagaStateMachine<BurgerCookerStateMachine, BurgerCookerState>()
         .InMemoryRepository();
 
-  //mt.AddSagas(entryAssembly);
-	mt.AddActivities(entryAssembly);
-
   mt.UsingRabbitMq((context, cfg) =>
   {
+    cfg.AutoStart = true;
 		cfg.ConfigureEndpoints(context);
     cfg.Host(new Uri("rabbitmq://localhost//TESTS"), h =>
     {
@@ -47,8 +45,6 @@ builder.Services.AddMassTransit(mt =>
       //});
     });
   });
-
-  mt.AddRequestClient<BurgerCookerOrderedEvent>(RequestTimeout.After(s:30));
 });
 
 var app = builder.Build();
